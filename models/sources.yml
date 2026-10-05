@@ -1,0 +1,112 @@
+version: 2
+
+sources:
+  - name: segment
+    description: >
+      Segment or Rudderstack event tables. Schema and table names are vars
+      (saas_segment_schema, saas_segment_database, and the *_identifier vars).
+      The default schema name is segment. Override it. Do not treat that
+      default as the only supported location.
+    database: "{{ var('saas_segment_database', target.database) }}"
+    schema: "{{ var('saas_segment_schema', 'segment') }}"
+    tables:
+      - name: identifies
+        identifier: "{{ var('saas_identifies_identifier', 'identifies') }}"
+        description: Identify calls that stitch anonymous_id to user_id.
+        columns:
+          - name: id
+            description: Unique identify call id.
+          - name: anonymous_id
+            description: Device or cookie id before login.
+          - name: user_id
+            description: Application user id.
+          - name: timestamp
+            description: When the identify call was sent.
+          - name: email
+            description: Email trait.
+          - name: context_group_id
+            description: Account / workspace id. Override the column with saas_account_id_column.
+
+      - name: tracks
+        identifier: "{{ var('saas_tracks_identifier', 'tracks') }}"
+        description: Product events. The event name column defaults to event.
+        columns:
+          - name: id
+            description: Unique track call id.
+          - name: anonymous_id
+            description: Device or cookie id.
+          - name: user_id
+            description: Application user id.
+          - name: event
+            description: Event name. Override the column with saas_event_column.
+          - name: timestamp
+            description: When the event occurred.
+          - name: context_group_id
+            description: Account / workspace id.
+
+      - name: pages
+        identifier: "{{ var('saas_pages_identifier', 'pages') }}"
+        description: Page views, including anonymous marketing traffic.
+        columns:
+          - name: id
+            description: Unique page call id.
+          - name: anonymous_id
+            description: Device or cookie id.
+          - name: user_id
+            description: Application user id. Null for anonymous visitors.
+          - name: timestamp
+            description: When the page was viewed.
+          - name: url
+            description: Full URL.
+          - name: path
+            description: URL path.
+          - name: context_group_id
+            description: Account / workspace id when known.
+
+      - name: groups
+        identifier: "{{ var('saas_groups_identifier', 'groups') }}"
+        description: Group calls. group_id is the B2B account. name and plan are group traits.
+        columns:
+          - name: id
+            description: Unique group call id.
+          - name: group_id
+            description: Account id. Override the column with saas_group_id_column.
+          - name: user_id
+            description: User who was associated with the account.
+          - name: timestamp
+            description: When the group call was sent.
+          - name: name
+            description: Account name trait. Override with saas_group_name_column.
+          - name: plan
+            description: Plan trait. Override with saas_group_plan_column.
+
+  - name: billing
+    description: >
+      Monthly subscription snapshots used for MRR. Defaults to the same database
+      and schema as Segment. Point saas_billing_schema at a Stripe (or warehouse)
+      schema and saas_subscriptions_identifier at the snapshot table or view.
+      Grain is one row per account per month. mrr is ending recurring revenue
+      in major currency units (dollars, not cents). status is active, past_due,
+      or canceled. A churned month may be omitted; the package treats a gap
+      after the first snapshot as MRR 0.
+    database: "{{ var('saas_billing_database', var('saas_segment_database', target.database)) }}"
+    schema: "{{ var('saas_billing_schema', var('saas_segment_schema', 'segment')) }}"
+    tables:
+      - name: subscriptions
+        identifier: "{{ var('saas_subscriptions_identifier', 'subscriptions') }}"
+        description: Account-month MRR snapshots.
+        columns:
+          - name: subscription_id
+            description: Unique snapshot row id.
+          - name: account_id
+            description: Same id as Segment group_id.
+          - name: month_start
+            description: First day of the month this MRR applies to.
+          - name: mrr
+            description: Ending MRR for the month. Use 0 when the account churned.
+          - name: status
+            description: active, past_due, or canceled.
+          - name: plan_name
+            description: Plan name in effect that month.
+          - name: seats
+            description: Seats or licenses in effect that month.

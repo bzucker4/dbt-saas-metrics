@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: demo_monthly_scorecard
+    description: >
+      One row per month joining the MRR waterfall, NRR, activation, and PLG funnel.
+      Built in the demo project to show how a buyer model refs the package.
+    columns:
+      - name: month_start
+        description: Calendar month.
+        data_tests:
+          - unique
+          - not_null
+      - name: ending_mrr
+        description: Ending MRR from saas_mrr_waterfall.
+        data_tests:
+          - not_null
+
+  - name: demo_account_health
+    description: Account health rows from saas_customer_health for the demo as-of date.
+    columns:
+      - name: account_id
+        description: B2B account id.
+        data_tests:
+          - unique
+          - not_null
+      - name: health_tier
+        description: healthy, watch, or at_risk.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ["healthy", "watch", "at_risk"]

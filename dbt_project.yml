@@ -1,0 +1,73 @@
+name: dbt_saas_metrics
+version: "1.0.0"
+config-version: 2
+require-dbt-version: [">=1.8.0", "<2.0.0"]
+profile: dbt_saas_metrics
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+docs-paths: ["docs", "models"]
+asset-paths: ["assets"]
+
+target-path: "target"
+clean-targets:
+  - target
+  - dbt_packages
+  - logs
+
+flags:
+  send_anonymous_usage_stats: false
+
+vars:
+  # Warehouse location of Segment or Rudderstack event tables.
+  # Leave saas_segment_database unset to use the active target database.
+  saas_segment_schema: segment
+  # Billing snapshots default to the event schema. Override saas_billing_schema
+  # and saas_billing_database when Stripe (or similar) lives elsewhere.
+  saas_identifies_identifier: identifies
+  saas_tracks_identifier: tracks
+  saas_pages_identifier: pages
+  saas_groups_identifier: groups
+  saas_subscriptions_identifier: subscriptions
+  # Column names on the raw event tables. Segment / Rudderstack defaults.
+  saas_column_casing: auto
+  saas_account_id_column: context_group_id
+  saas_event_column: event
+  saas_group_id_column: group_id
+  saas_group_name_column: name
+  saas_group_plan_column: plan
+  # Product analytics.
+  saas_signup_event: signed_up
+  saas_activation_event: activated
+  saas_paid_event: subscription_started
+  saas_activation_window_days: 14
+  saas_health_lookback_days: 30
+  saas_currency_code: USD
+
+models:
+  dbt_saas_metrics:
+    +tags: ["saas_metrics"]
+    +materialized: view
+    staging:
+      +materialized: view
+      +schema: staging
+      +tags: ["saas_staging"]
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+      +tags: ["saas_intermediate"]
+    marts:
+      +materialized: table
+      +schema: marts
+      +tags: ["saas_mart"]
+
+seeds:
+  dbt_saas_metrics:
+    saas_metric_definitions:
+      # Buyers opt in. The integration demo enables this seed.
+      +enabled: false
+      +schema: marts

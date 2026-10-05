@@ -1,0 +1,121 @@
+version: 2
+
+models:
+  - name: stg_saas_identifies
+    description: Cleaned identify calls. One row per call with a timestamp.
+    columns:
+      - name: identify_id
+        description: Unique identify call id.
+        data_tests:
+          - unique
+          - not_null
+      - name: identified_at
+        description: Timestamp of the identify call.
+        data_tests:
+          - not_null
+      - name: user_id
+        description: Application user id when the call identified a known user.
+      - name: anonymous_id
+        description: Anonymous id on the call.
+      - name: email
+        description: Email trait.
+      - name: account_id
+        description: Account id from the configured account column.
+
+  - name: stg_saas_tracks
+    description: Cleaned track calls. One row per product event.
+    columns:
+      - name: track_id
+        description: Unique track call id.
+        data_tests:
+          - unique
+          - not_null
+      - name: event_name
+        description: Product event name.
+        data_tests:
+          - not_null
+      - name: occurred_at
+        description: When the event occurred.
+        data_tests:
+          - not_null
+      - name: user_id
+        description: Application user id when known.
+      - name: anonymous_id
+        description: Anonymous id on the call.
+      - name: account_id
+        description: Account id from the configured account column.
+
+  - name: stg_saas_pages
+    description: Cleaned page views, including anonymous visitors.
+    columns:
+      - name: page_id
+        description: Unique page call id.
+        data_tests:
+          - unique
+          - not_null
+      - name: occurred_at
+        description: When the page was viewed.
+        data_tests:
+          - not_null
+      - name: anonymous_id
+        description: Anonymous id. Required to stitch visitors who later sign up.
+      - name: user_id
+        description: User id when the visitor was already identified.
+      - name: path
+        description: URL path.
+      - name: url
+        description: Full URL.
+      - name: account_id
+        description: Account id when known.
+
+  - name: stg_saas_groups
+    description: Cleaned group calls. group_id is renamed to account_id.
+    columns:
+      - name: group_call_id
+        description: Unique group call id.
+        data_tests:
+          - unique
+          - not_null
+      - name: account_id
+        description: B2B account id.
+        data_tests:
+          - not_null
+      - name: occurred_at
+        description: When the group call was sent.
+        data_tests:
+          - not_null
+      - name: user_id
+        description: User associated with the account.
+      - name: account_name
+        description: Account name trait.
+      - name: plan_name
+        description: Plan trait from the group call. Billing plan comes from subscriptions.
+
+  - name: stg_saas_subscriptions
+    description: >
+      Monthly billing snapshots. One or more rows per account per month are
+      summed to a single MRR amount downstream.
+    columns:
+      - name: subscription_id
+        description: Unique snapshot row id.
+        data_tests:
+          - unique
+          - not_null
+      - name: account_id
+        description: B2B account id. Must match Segment group_id.
+        data_tests:
+          - not_null
+      - name: month_start
+        description: Month the MRR amount applies to.
+        data_tests:
+          - not_null
+      - name: mrr
+        description: Ending MRR in major currency units.
+        data_tests:
+          - not_null
+      - name: status
+        description: Lowercased billing status (active, past_due, canceled).
+      - name: plan_name
+        description: Plan name for the month.
+      - name: seats
+        description: Seat count for the month.

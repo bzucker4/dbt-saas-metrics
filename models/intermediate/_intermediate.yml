@@ -1,0 +1,177 @@
+version: 2
+
+models:
+  - name: int_saas_accounts
+    description: One row per B2B account seen in group calls or billing snapshots.
+    columns:
+      - name: account_id
+        description: B2B account id.
+        data_tests:
+          - unique
+          - not_null
+      - name: account_name
+        description: Latest group-call name trait.
+      - name: group_plan_name
+        description: Latest plan trait from group calls. Not the billing plan.
+      - name: last_group_at
+        description: Timestamp of the latest group call.
+      - name: known_users
+        description: Distinct users associated with the account via group calls.
+
+  - name: int_saas_user_first_touch
+    description: >
+      One row per known user. Anonymous page views are stitched through the
+      earliest identify call. first_seen_at is the earliest of page, identify,
+      and signup.
+    columns:
+      - name: user_id
+        description: Application user id.
+        data_tests:
+          - unique
+          - not_null
+      - name: first_anonymous_id
+        description: Anonymous id on the user's earliest stitched page view.
+      - name: account_id
+        description: Latest group account, else the account on the signup event.
+      - name: email
+        description: Email from the earliest identify call.
+      - name: first_page_at
+        description: Earliest stitched page view.
+      - name: landing_path
+        description: Path of the earliest stitched page view.
+      - name: first_identify_at
+        description: Earliest identify call.
+      - name: signup_at
+        description: First signup event. Null when the user never signed up.
+      - name: first_seen_at
+        description: Earliest observed timestamp for the user.
+
+  - name: int_saas_user_activation
+    description: >
+      One row per user with a signup event. activated_within_window compares
+      days from signup to the first activation event against
+      saas_activation_window_days.
+    columns:
+      - name: user_id
+        description: Application user id.
+        data_tests:
+          - unique
+          - not_null
+      - name: cohort_month
+        description: Month of signup.
+        data_tests:
+          - not_null
+      - name: signup_at
+        description: First signup event timestamp.
+        data_tests:
+          - not_null
+      - name: activated_at
+        description: First activation event. Null if the user never activated.
+      - name: days_to_activate
+        description: Whole days from signup to activation. Null if never activated.
+      - name: activated_ever
+        description: True when an activation event exists on or after signup.
+        data_tests:
+          - not_null
+      - name: activated_within_window
+        description: True when activation happened inside the configured window.
+        data_tests:
+          - not_null
+      - name: activation_window_days
+        description: Window used for this row, from saas_activation_window_days.
+      - name: account_id
+        description: Account the user belongs to.
+      - name: email
+        description: Email from first touch.
+
+  - name: int_saas_account_mrr_monthly
+    description: >
+      Account-month MRR with prior-month comparison and waterfall components.
+      new_mrr is first-time logo MRR. reactivation_mrr is MRR that returned
+      after a zero month. expansion_mrr, contraction_mrr, and churn_mrr are
+      mutually exclusive positive amounts. The components add back to ending MRR.
+    columns:
+      - name: account_month_key
+        description: Surrogate key of account_id and month_start.
+        data_tests:
+          - unique
+          - not_null
+      - name: account_id
+        description: B2B account id.
+        data_tests:
+          - not_null
+      - name: month_start
+        description: First day of the month.
+        data_tests:
+          - not_null
+      - name: change_type
+        description: new, reactivation, expansion, contraction, churn, retained, or inactive.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values:
+                - new
+                - reactivation
+                - expansion
+                - contraction
+                - churn
+                - retained
+                - inactive
+      - name: mrr
+        description: Ending MRR for the month.
+        data_tests:
+          - not_null
+      - name: prior_mrr
+        description: Prior calendar month MRR. Zero when the account was not active.
+        data_tests:
+          - not_null
+      - name: new_mrr
+        description: First-time logo MRR. Zero unless change_type is new.
+      - name: reactivation_mrr
+        description: Returned MRR after a zero month. Zero unless change_type is reactivation.
+      - name: expansion_mrr
+        description: Positive MRR delta for an existing active account.
+      - name: contraction_mrr
+        description: MRR lost while the account stayed above zero.
+      - name: churn_mrr
+        description: MRR lost because the account went to zero.
+      - name: currency_code
+        description: Label from saas_currency_code. Amounts are not converted.
+
+  - name: int_saas_plg_funnel_events
+    description: >
+      One person per row. Stage flags are sequential from visit to paid.
+      Anonymous visitors who never identify stay in the visit stage only.
+    columns:
+      - name: person_id
+        description: user_id when known, otherwise anonymous_id.
+        data_tests:
+          - unique
+          - not_null
+      - name: cohort_month
+        description: Month of first visit, or signup month when no page exists.
+        data_tests:
+          - not_null
+      - name: has_visit
+        description: True when the person has a page view or a signup.
+        data_tests:
+          - not_null
+      - name: has_signup
+        description: True when the person fired the signup event.
+        data_tests:
+          - not_null
+      - name: has_activation
+        description: True when the person signed up and later activated.
+        data_tests:
+          - not_null
+      - name: has_paid
+        description: True when the person activated and their account has ever had MRR above zero.
+        data_tests:
+          - not_null
+      - name: is_paid_account
+        description: >
+          True when the person's account has any positive MRR snapshot or the
+          person fired saas_paid_event. Not sequential; has_paid also requires
+          signup and activation.
+      - name: activated_within_window
+        description: Time-boxed activation flag. The funnel stage uses has_activation (ever).

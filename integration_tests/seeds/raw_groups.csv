@@ -1,0 +1,16 @@
+id,group_id,user_id,timestamp,name,plan
+grp_user_anna,acct_acme,user_anna,2025-01-02 09:00:00,Acme Robotics,growth
+grp_user_adam,acct_acme,user_adam,2025-01-10 14:00:00,Acme Robotics,growth
+grp_user_ben,acct_beta,user_ben,2025-01-06 10:00:00,Beta Logistics,starter
+grp_user_eva,acct_echo,user_eva,2025-01-08 11:30:00,Echo Media,growth
+grp_user_hana,acct_hotel,user_hana,2025-01-12 08:00:00,HotelOps,starter
+grp_user_jon,acct_jon,user_jon,2025-01-20 12:00:00,Jon Solo,free
+grp_user_gina,acct_gamma,user_gina,2025-02-03 10:00:00,Gamma Health,growth
+grp_user_late,acct_late,user_late,2025-02-01 09:00:00,Late Co,free
+grp_user_dan,acct_delta,user_dan,2025-03-04 13:00:00,Delta Finance,scale
+grp_user_dina,acct_delta,user_dina,2025-03-15 10:00:00,Delta Finance,scale
+grp_user_fay,acct_free,user_fay,2025-03-05 11:00:00,Northwind Trial,free
+grp_user_sam,acct_sam,user_sam,2025-03-01 15:00:00,Sam Experiments,free
+grp_user_frank,acct_foxtrot,user_frank,2025-04-02 09:30:00,Foxtrot AI,starter
+grp_user_ian,acct_india,user_ian,2025-05-06 10:00:00,IndiaPay,growth
+grp_user_june,acct_june,user_june,2025-06-10 16:00:00,June Labs,trial

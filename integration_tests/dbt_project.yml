@@ -1,0 +1,87 @@
+name: dbt_saas_metrics_integration_tests
+version: "1.0.0"
+config-version: 2
+require-dbt-version: [">=1.8.0", "<2.0.0"]
+profile: dbt_saas_metrics_integration_tests
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+clean-targets:
+  - target
+  - dbt_packages
+  - logs
+
+flags:
+  send_anonymous_usage_stats: false
+
+vars:
+  saas_segment_schema: segment
+  saas_as_of_date: "2025-06-30"
+  saas_signup_event: signed_up
+  saas_activation_event: activated
+  saas_paid_event: subscription_started
+  saas_activation_window_days: 14
+  saas_health_lookback_days: 30
+  saas_currency_code: USD
+
+models:
+  dbt_saas_metrics_integration_tests:
+    +materialized: table
+  dbt_saas_metrics:
+    +materialized: table
+
+seeds:
+  dbt_saas_metrics_integration_tests:
+    +schema: segment
+    +quote_columns: false
+    raw_identifies:
+      +alias: identifies
+      +column_types:
+        id: varchar
+        anonymous_id: varchar
+        user_id: varchar
+        timestamp: timestamp
+        email: varchar
+        context_group_id: varchar
+    raw_tracks:
+      +alias: tracks
+      +column_types:
+        id: varchar
+        anonymous_id: varchar
+        user_id: varchar
+        event: varchar
+        timestamp: timestamp
+        context_group_id: varchar
+    raw_pages:
+      +alias: pages
+      +column_types:
+        id: varchar
+        anonymous_id: varchar
+        user_id: varchar
+        timestamp: timestamp
+        url: varchar
+        path: varchar
+        context_group_id: varchar
+    raw_groups:
+      +alias: groups
+      +column_types:
+        id: varchar
+        group_id: varchar
+        user_id: varchar
+        timestamp: timestamp
+        name: varchar
+        plan: varchar
+    raw_subscriptions:
+      +alias: subscriptions
+      +column_types:
+        subscription_id: varchar
+        account_id: varchar
+        month_start: date
+        mrr: decimal(18,2)
+        status: varchar
+        plan_name: varchar
+        seats: integer
+  dbt_saas_metrics:
+    +enabled: true

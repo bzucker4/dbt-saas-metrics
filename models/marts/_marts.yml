@@ -1,0 +1,365 @@
+version: 2
+
+models:
+  - name: saas_activation
+    description: "{{ doc('saas_activation_definition') }}"
+    columns:
+      - name: cohort_month
+        description: Signup month (first day).
+        data_tests:
+          - unique
+          - not_null
+      - name: signup_event
+        description: Signup event name from saas_signup_event.
+      - name: activation_event
+        description: Activation event name from saas_activation_event.
+      - name: activation_window_days
+        description: Window length from saas_activation_window_days.
+      - name: new_users
+        description: Users who signed up in the cohort month.
+        data_tests:
+          - not_null
+      - name: activated_users
+        description: Cohort users who activated inside the window.
+        data_tests:
+          - not_null
+      - name: activated_after_window
+        description: Cohort users who activated after the window.
+        data_tests:
+          - not_null
+      - name: not_activated_users
+        description: Cohort users with no activation event.
+        data_tests:
+          - not_null
+      - name: activation_rate
+        description: activated_users divided by new_users. Between 0 and 1.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 1
+              inclusive: true
+      - name: median_days_to_activate
+        description: Median whole days from signup to activation for users inside the window. Null when nobody activated in the window.
+
+  - name: saas_nrr
+    description: "{{ doc('saas_nrr_definition') }}"
+    columns:
+      - name: month_start
+        description: Month being measured (first day).
+        data_tests:
+          - unique
+          - not_null
+      - name: currency_code
+        description: Currency label from saas_currency_code.
+      - name: starting_mrr
+        description: MRR from accounts active at the end of the prior month.
+        data_tests:
+          - not_null
+      - name: expansion_mrr
+        description: Increases among the starting cohort.
+        data_tests:
+          - not_null
+      - name: contraction_mrr
+        description: Decreases among starting accounts that stayed above zero.
+        data_tests:
+          - not_null
+      - name: churn_mrr
+        description: MRR lost from starting accounts that went to zero.
+        data_tests:
+          - not_null
+      - name: new_mrr
+        description: New logo MRR plus reactivation MRR. Excluded from NRR.
+      - name: reactivation_mrr
+        description: Portion of new_mrr from accounts that returned after zero.
+      - name: ending_mrr
+        description: Total ending MRR, including new logos.
+      - name: nrr
+        description: Net revenue retention ratio. Null when starting_mrr is 0. 1.0 means 100 percent.
+      - name: grr
+        description: Gross revenue retention ratio. Expansion is excluded. Null when starting_mrr is 0.
+      - name: nrr_pct
+        description: NRR times 100.
+      - name: grr_pct
+        description: GRR times 100.
+      - name: starting_logos
+        description: Accounts with MRR above zero at the start of the month.
+      - name: churned_logos
+        description: Starting accounts whose MRR went to zero.
+      - name: ending_logos
+        description: Accounts with MRR above zero at the end of the month.
+
+  - name: saas_expansion_mrr
+    description: "{{ doc('saas_expansion_definition') }}"
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - account_id
+            - month_start
+    columns:
+      - name: account_month_key
+        description: Surrogate key of account and month.
+        data_tests:
+          - unique
+          - not_null
+      - name: month_start
+        description: Month of the increase.
+        data_tests:
+          - not_null
+      - name: account_id
+        description: Account that expanded.
+        data_tests:
+          - not_null
+      - name: account_name
+        description: Latest account name.
+      - name: plan_name
+        description: Billing plan on the expansion month.
+      - name: prior_mrr
+        description: MRR at the end of the prior month.
+      - name: current_mrr
+        description: MRR at the end of this month.
+      - name: expansion_mrr
+        description: current_mrr minus prior_mrr. Always greater than zero on this model.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: currency_code
+        description: Currency label.
+
+  - name: saas_contraction_mrr
+    description: "{{ doc('saas_contraction_definition') }}"
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - account_id
+            - month_start
+    columns:
+      - name: account_month_key
+        description: Surrogate key of account and month.
+        data_tests:
+          - unique
+          - not_null
+      - name: month_start
+        description: Month of the decrease.
+        data_tests:
+          - not_null
+      - name: account_id
+        description: Account that contracted.
+        data_tests:
+          - not_null
+      - name: account_name
+        description: Latest account name.
+      - name: plan_name
+        description: Billing plan on the contraction month.
+      - name: prior_mrr
+        description: MRR at the end of the prior month.
+      - name: current_mrr
+        description: MRR at the end of this month. Still above zero.
+      - name: contraction_mrr
+        description: prior_mrr minus current_mrr. Always greater than zero on this model.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: currency_code
+        description: Currency label.
+
+  - name: saas_churn
+    description: "{{ doc('saas_churn_definition') }}"
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - account_id
+            - month_start
+    columns:
+      - name: account_month_key
+        description: Surrogate key of account and month.
+        data_tests:
+          - unique
+          - not_null
+      - name: month_start
+        description: Month the account reached zero MRR.
+        data_tests:
+          - not_null
+      - name: account_id
+        description: Churned account.
+        data_tests:
+          - not_null
+      - name: account_name
+        description: Latest account name.
+      - name: plan_name
+        description: Plan on the churn snapshot when one was provided.
+      - name: churned_mrr
+        description: MRR lost, equal to the prior month's MRR.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: currency_code
+        description: Currency label.
+      - name: churned_logo
+        description: Always 1, so a sum is a logo-churn count.
+
+  - name: saas_plg_funnel
+    description: "{{ doc('saas_plg_funnel_definition') }}"
+    data_tests:
+      - dbt_utils.expression_is_true:
+          expression: "signups <= visitors and activations <= signups and paid_conversions <= activations"
+    columns:
+      - name: cohort_month
+        description: Month of first visit, or signup if no page was captured.
+        data_tests:
+          - unique
+          - not_null
+      - name: visitors
+        description: People who visited or signed up.
+        data_tests:
+          - not_null
+      - name: signups
+        description: People who signed up.
+        data_tests:
+          - not_null
+      - name: activations
+        description: People who signed up and activated at any time.
+        data_tests:
+          - not_null
+      - name: paid_conversions
+        description: Activated people whose account has had positive MRR, or who fired saas_paid_event.
+        data_tests:
+          - not_null
+      - name: visit_to_signup_rate
+        description: signups divided by visitors.
+      - name: signup_to_activation_rate
+        description: activations divided by signups. This is not the time-boxed activation rate.
+      - name: activation_to_paid_rate
+        description: paid_conversions divided by activations.
+      - name: visit_to_paid_rate
+        description: paid_conversions divided by visitors.
+
+  - name: saas_mrr_waterfall
+    description: "{{ doc('saas_waterfall_definition') }}"
+    columns:
+      - name: month_start
+        description: Month of the bridge.
+        data_tests:
+          - unique
+          - not_null
+      - name: currency_code
+        description: Currency label.
+      - name: starting_mrr
+        description: MRR active at the end of the prior month.
+        data_tests:
+          - not_null
+      - name: new_mrr
+        description: First-time logo MRR plus reactivation MRR.
+        data_tests:
+          - not_null
+      - name: of_which_reactivation_mrr
+        description: Reactivation portion already included in new_mrr.
+        data_tests:
+          - not_null
+      - name: expansion_mrr
+        description: Expansion from existing active accounts.
+        data_tests:
+          - not_null
+      - name: contraction_mrr
+        description: Contraction from accounts that stayed above zero.
+        data_tests:
+          - not_null
+      - name: churn_mrr
+        description: MRR lost to accounts that went to zero.
+        data_tests:
+          - not_null
+      - name: ending_mrr
+        description: MRR active at the end of the month.
+        data_tests:
+          - not_null
+      - name: net_new_mrr
+        description: ending_mrr minus starting_mrr.
+        data_tests:
+          - not_null
+      - name: starting_logos
+        description: Active accounts at the start of the month.
+      - name: new_logos
+        description: First-time billed accounts.
+      - name: reactivated_logos
+        description: Accounts that returned after a zero month.
+      - name: churned_logos
+        description: Accounts that went to zero.
+      - name: ending_logos
+        description: Active accounts at the end of the month.
+
+  - name: saas_customer_health
+    description: "{{ doc('saas_health_definition') }}"
+    columns:
+      - name: account_id
+        description: B2B account id.
+        data_tests:
+          - unique
+          - not_null
+      - name: account_name
+        description: Latest account name.
+      - name: as_of_date
+        description: Date the score was evaluated.
+        data_tests:
+          - not_null
+      - name: current_mrr
+        description: MRR in the latest billed month at or before the as-of date.
+        data_tests:
+          - not_null
+      - name: prior_mrr
+        description: Prior month MRR for that latest billed month.
+      - name: currency_code
+        description: Currency label.
+      - name: plan_name
+        description: Billing plan on the latest month.
+      - name: payment_status
+        description: active, past_due, canceled, or none.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ["active", "past_due", "canceled", "none"]
+      - name: change_type
+        description: MRR movement on the latest billed month. Null when the account has never been billed.
+      - name: known_users
+        description: Users tied to the account through group calls.
+      - name: last_seen_at
+        description: Latest track timestamp at or before the as-of time.
+      - name: days_since_last_seen
+        description: Whole days between last_seen_at and the as-of date.
+      - name: events_lookback
+        description: Track events inside the health lookback window.
+        data_tests:
+          - not_null
+      - name: active_users_lookback
+        description: Distinct users with a track inside the lookback window.
+        data_tests:
+          - not_null
+      - name: lookback_days
+        description: Lookback length from saas_health_lookback_days.
+      - name: recency_points
+        description: 0 to 40 from days since last track.
+      - name: volume_points
+        description: 0 to 16 from events in the lookback window.
+      - name: payment_points
+        description: 0, 12, or 30 from billing status and MRR.
+      - name: growth_points
+        description: 0, 3, 6, or 10 from the latest MRR movement.
+      - name: health_score
+        description: Sum of the point columns, capped at 100.
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+              inclusive: true
+      - name: health_tier
+        description: healthy, watch, or at_risk.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ["healthy", "watch", "at_risk"]

@@ -1,0 +1,16 @@
+id,anonymous_id,user_id,timestamp,email,context_group_id
+id_user_anna,anon_anna,user_anna,2025-01-02 09:00:00,anna@acme.example,acct_acme
+id_user_adam,anon_adam,user_adam,2025-01-10 14:00:00,adam@acme.example,acct_acme
+id_user_ben,anon_ben,user_ben,2025-01-06 10:00:00,ben@beta.example,acct_beta
+id_user_eva,anon_eva,user_eva,2025-01-08 11:30:00,eva@echo.example,acct_echo
+id_user_hana,anon_hana,user_hana,2025-01-12 08:00:00,hana@hotelops.example,acct_hotel
+id_user_jon,anon_jon,user_jon,2025-01-20 12:00:00,jon@example.com,acct_jon
+id_user_gina,anon_gina,user_gina,2025-02-03 10:00:00,gina@gamma.example,acct_gamma
+id_user_late,anon_late,user_late,2025-02-01 09:00:00,late@example.com,acct_late
+id_user_dan,anon_dan,user_dan,2025-03-04 13:00:00,dan@delta.example,acct_delta
+id_user_dina,anon_dina,user_dina,2025-03-15 10:00:00,dina@delta.example,acct_delta
+id_user_fay,anon_fay,user_fay,2025-03-05 11:00:00,fay@northwind.example,acct_free
+id_user_sam,anon_sam,user_sam,2025-03-01 15:00:00,sam@example.com,acct_sam
+id_user_frank,anon_frank,user_frank,2025-04-02 09:30:00,frank@foxtrot.example,acct_foxtrot
+id_user_ian,anon_ian,user_ian,2025-05-06 10:00:00,ian@indiapay.example,acct_india
+id_user_june,anon_june,user_june,2025-06-10 16:00:00,june@example.com,acct_june

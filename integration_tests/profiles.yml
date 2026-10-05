@@ -1,0 +1,8 @@
+dbt_saas_metrics_integration_tests:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: target/saas_metrics.duckdb
+      schema: main
+      threads: 4

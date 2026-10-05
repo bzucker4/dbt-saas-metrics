@@ -1,0 +1,41 @@
+# Copy to ~/.dbt/profiles.yml or pass --profiles-dir.
+# The DuckDB demo does not use this file. It uses integration_tests/profiles.yml.
+# Do not commit real account names, keys, or passwords.
+
+dbt_saas_metrics:
+  target: duckdb
+  outputs:
+    duckdb:
+      type: duckdb
+      path: target/saas_metrics.duckdb
+      schema: main
+      threads: 4
+
+    snowflake:
+      type: snowflake
+      account: YOUR_ACCOUNT
+      user: YOUR_USER
+      private_key_path: /path/to/key.p8
+      role: TRANSFORMER
+      database: ANALYTICS
+      warehouse: TRANSFORMING
+      schema: dbt_dev
+      threads: 8
+
+    bigquery:
+      type: bigquery
+      method: oauth
+      project: your-gcp-project
+      dataset: dbt_dev
+      threads: 8
+      location: US
+
+    redshift:
+      type: redshift
+      host: your-cluster.region.redshift.amazonaws.com
+      user: YOUR_USER
+      password: "{{ env_var('REDSHIFT_PASSWORD') }}"
+      port: 5439
+      dbname: analytics
+      schema: dbt_dev
+      threads: 8

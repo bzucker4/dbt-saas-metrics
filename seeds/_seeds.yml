@@ -1,0 +1,21 @@
+version: 2
+
+seeds:
+  - name: saas_metric_definitions
+    description: >
+      Human-readable definitions for the marts in this package. Disabled by
+      default so a production dbt seed does not create the table until a buyer
+      enables it. The DuckDB demo enables it.
+    columns:
+      - name: metric_name
+        description: Name of the metric.
+      - name: model_name
+        description: dbt model that publishes the metric.
+      - name: grain
+        description: Row grain of that model.
+      - name: unit
+        description: Unit of the primary figure.
+      - name: definition
+        description: Plain-language definition.
+      - name: formula
+        description: Formula implemented in SQL.

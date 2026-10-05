@@ -1,0 +1,23 @@
+dbt_saas_metrics
+Copyright (c) 2026. All Rights Reserved.
+
+This package is a commercial product. A purchase grants the buying organization
+a non-exclusive, non-transferable license to use the package internally,
+including in that organization's private data warehouse and analytics projects.
+
+You may not:
+- redistribute, publish, sublicense, or resell the source
+- share the repository, a fork, or a substantial excerpt outside the buying organization
+- remove this license or present the package as open source
+
+The buying organization may modify the package for its own internal use.
+Modifications stay under this license and may not be distributed.
+
+THE PACKAGE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+NON-INFRINGEMENT. THE AUTHOR IS NOT LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY ARISING FROM USE OF THE PACKAGE.
+
+Support is provided through the store where you purchased the package
+(for example Gumroad). Do not open a public issue with credentials, warehouse
+names, or customer data.
