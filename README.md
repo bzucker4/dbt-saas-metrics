@@ -6,6 +6,14 @@ The package turns Segment- or RudderStack-style event data and a monthly account
 
 > **Current release:** `v1.0.0` · **Demo:** DuckDB · **Minimum dbt Core:** 1.8+
 
+## Interactive demo
+
+**[Open the interactive dashboard](https://bzucker4.github.io/dbt-saas-metrics/)** *(available after the GitHub Pages deployment completes and Pages is enabled for this repository).* The dashboard lets you switch between overview, revenue, activation, and PLG funnel views, change the selected month, and export the synthetic scorecard as CSV.
+
+The page is a static demonstration built from the repository's synthetic DuckDB fixture results. It does **not** connect to a live warehouse or customer billing system, and it is not production analytics software. Its headline examples include June 2025 ending MRR of $3,800, expansion MRR of $500, NRR of 115.15%, and GRR of 100%; January 2025 activation is 5 of 6 users (83.33%), with a 2-day median time to activate.
+
+The demo source is in [\`demo/index.html\`](demo/index.html). A GitHub Actions workflow in [\`.github/workflows/deploy-demo.yml\`](.github/workflows/deploy-demo.yml) publishes the static site to GitHub Pages when the workflow is permitted by repository settings.
+
 ## Why use it?
 
 SaaS teams often calculate MRR movements, activation, and retention in separate dashboards or one-off SQL. This package provides a consistent starting point with documented metric definitions, configurable source mappings, reusable dbt models, and data-quality tests.
