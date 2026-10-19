@@ -180,6 +180,36 @@ def main():
                 }
             )
 
+    # Regression fixture: an activation before signup must not mask a later one.
+    tracks.extend(
+        [
+            {
+                "id": "trk_user_edge_signup",
+                "anonymous_id": "anon_edge",
+                "user_id": "user_edge",
+                "event": "signed_up",
+                "timestamp": "2025-07-10 09:00:00",
+                "context_group_id": "",
+            },
+            {
+                "id": "trk_user_edge_activated_early",
+                "anonymous_id": "anon_edge",
+                "user_id": "user_edge",
+                "event": "activated",
+                "timestamp": "2025-07-01 09:00:00",
+                "context_group_id": "",
+            },
+            {
+                "id": "trk_user_edge_activated_after_signup",
+                "anonymous_id": "anon_edge",
+                "user_id": "user_edge",
+                "event": "activated",
+                "timestamp": "2025-07-12 09:00:00",
+                "context_group_id": "",
+            },
+        ]
+    )
+
     user_anon = {user_id: anon for user_id, anon, *_ in users}
     for index, (user_id, account_id, occurred_at) in enumerate(feature_events, start=1):
         tracks.append(
