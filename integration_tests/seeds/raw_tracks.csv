@@ -67,3 +67,6 @@ trk_feat_030,anon_frank,user_frank,feature_used,2025-06-21 09:00:00,acct_foxtrot
 trk_feat_031,anon_ian,user_ian,feature_used,2025-06-09 10:00:00,acct_india
 trk_feat_032,anon_ian,user_ian,feature_used,2025-06-16 10:00:00,acct_india
 trk_feat_033,anon_ian,user_ian,feature_used,2025-06-29 18:00:00,acct_india
+trk_user_edge_signup,anon_edge,user_edge,signed_up,2025-07-10 09:00:00,
+trk_user_edge_activated_early,anon_edge,user_edge,activated,2025-07-01 09:00:00,
+trk_user_edge_activated_after_signup,anon_edge,user_edge,activated,2025-07-12 09:00:00,
