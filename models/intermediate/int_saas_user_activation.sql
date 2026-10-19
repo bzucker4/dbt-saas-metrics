@@ -1,6 +1,6 @@
 -- Grain: one user who fired the signup event.
--- activated_within_window is true when the activation event happens
--- between signup and signup + saas_activation_window_days (default 14).
+-- activated_within_window is true when the first activation at or after signup
+-- happens between signup and signup + saas_activation_window_days (default 14).
 
 with signed_up_users as (
     select *
@@ -10,12 +10,14 @@ with signed_up_users as (
 
 activations as (
     select
-        user_id,
-        min(occurred_at) as activated_at
-    from {{ ref('stg_saas_tracks') }}
-    where event_name = {{ saas_event_literal('saas_activation_event', 'activated') }}
-        and user_id is not null
-    group by user_id
+        signed_up_users.user_id,
+        min(tracks.occurred_at) as activated_at
+    from signed_up_users
+    inner join {{ ref('stg_saas_tracks') }} as tracks
+        on signed_up_users.user_id = tracks.user_id
+        and tracks.occurred_at >= signed_up_users.signup_at
+    where tracks.event_name = {{ saas_event_literal('saas_activation_event', 'activated') }}
+    group by signed_up_users.user_id
 ),
 
 joined as (
@@ -48,12 +50,11 @@ select
     activated_at,
     days_to_activate,
     case
-        when activated_at is not null and days_to_activate >= 0 then true
+        when activated_at is not null then true
         else false
     end as activated_ever,
     case
         when activated_at is null then false
-        when days_to_activate < 0 then false
         when days_to_activate <= {{ var('saas_activation_window_days', 14) }} then true
         else false
     end as activated_within_window,
